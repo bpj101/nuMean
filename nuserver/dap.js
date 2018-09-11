@@ -4,7 +4,9 @@ import Post from "./models/post";
 import mongoose from 'mongoose';
 
 // MongoDB setup
-mongoose.connect('mongodb://localhost:27017/numean-db')
+mongoose.connect('mongodb://localhost:27017/numean-db', {
+    useNewUrlParser: true
+  })
   .then(() => {
     console.log('MondoDB connections established!!');
   })
