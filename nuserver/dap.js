@@ -1,7 +1,8 @@
 import express from "express";
 import bodyParser from 'body-parser';
-import Post from "./models/post";
 import mongoose from 'mongoose';
+import router from './routes/posts';
+
 
 // MongoDB setup
 mongoose.connect('mongodb://localhost:27017/numean-db', {
@@ -28,42 +29,7 @@ dap.use((req, res, next) => {
   next();
 });
 
-dap.post("/api/posts", (req, res, next) => {
-  // const post = req.body;
-  const post = new Post({
-    title: req.body.title,
-    content: req.body.content
-  });
-  post.save()
-    .then((savedPost) => {
-      res.status(201).json({
-        message: "Post created successfully",
-        data: savedPost
-      });
-    });
-});
-
-dap.get('/api/posts', (req, res, next) => {
-  Post.find()
-    .then((posts) => {
-      res.status(200).json({
-        message: 'Posts sent successfully!',
-        data: posts
-      });
-    });
-});
-
-dap.delete("/api/posts/:id", (req, res, next) => {
-  Post.deleteOne({
-      _id: req.params.id
-    })
-    .then((result) => {
-      console.log(result);
-    });
-  res.status(200).json({
-    message: 'Post deleted successfully!'
-  });
-})
+dap.use('/', router);
 
 dap.listen(port, () => {
   console.log('Listening on PORT: %s', port);
