@@ -1,11 +1,35 @@
 import express from 'express';
+import multer from 'multer';
 
 import Post from "../models/post";
 
 const router = express.Router();
 
+const MIME_TYPE_MAP = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg'
+}
 
-router.get('/api/posts', (req, res, next) => {
+const storageConfig = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const isValid = MIME_TYPE_MAP[file.mimetype];
+    let error = new Error("Invalid mime type");
+    if (isValid) {
+      error = null;
+    };
+
+    cb(error, "images");
+  },
+  filename: (req, file, cb) => {
+    const name = file.originalname.toLowerCase().split(' ').join('-');
+    const ext = MIME_TYPE_MAP[file.mimetype];
+    cb(null, name + '-' + Date.now() + '.' + ext);
+  }
+});
+
+
+router.get('', (req, res, next) => {
   Post.find()
     .then((posts) => {
       res.status(200).json({
@@ -15,7 +39,7 @@ router.get('/api/posts', (req, res, next) => {
     });
 });
 
-router.get("/api/posts/:id", (req, res, next) => {
+router.get("/:id", (req, res, next) => {
   Post.findById(req.params.id)
     .then((post) => {
       if (post) {
@@ -28,7 +52,10 @@ router.get("/api/posts/:id", (req, res, next) => {
     });
 });
 
-router.post("/api/posts", (req, res, next) => {
+router.post("", multer({
+  storage: storageConfig
+}).single('image'), (req, res,
+  next) => {
   // const post = req.body;
   const post = new Post({
     title: req.body.title,
@@ -43,7 +70,7 @@ router.post("/api/posts", (req, res, next) => {
     });
 });
 
-router.patch("/api/posts/:id", (req, res, next) => {
+router.patch("/:id", (req, res, next) => {
   const post = {
     title: req.body.title,
     content: req.body.content
@@ -53,18 +80,17 @@ router.patch("/api/posts/:id", (req, res, next) => {
     }, {
       $set: post
     })
-    .then((err, updatedPost) => {
-      console.log('updatedPost', updatedPost);
+    .then(() => {
       res.status(200).json({
         message: "Update successfully!",
-        data: updatedPost
+        data: post
       });
     });
 });
 
 
 
-router.delete("/api/posts/:id", (req, res, next) => {
+router.delete("/:id", (req, res, next) => {
   Post.deleteOne({
       _id: req.params.id
     })
@@ -76,4 +102,6 @@ router.delete("/api/posts/:id", (req, res, next) => {
   });
 });
 
-export default router;
+export {
+  router
+};

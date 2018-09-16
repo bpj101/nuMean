@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
-import router from './routes/posts';
+import { router as postsRoutes } from './routes/posts';
 
 
 // MongoDB setup
@@ -29,7 +29,7 @@ dap.use((req, res, next) => {
   next();
 });
 
-dap.use('/', router);
+dap.use('/api/posts', postsRoutes);
 
 dap.listen(port, () => {
   console.log('Listening on PORT: %s', port);
